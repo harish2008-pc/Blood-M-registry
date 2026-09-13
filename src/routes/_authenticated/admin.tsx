@@ -73,7 +73,13 @@ function AdminPage() {
   });
 
   const patch = useMutation({
-    mutationFn: async ({ id, values }: { id: string; values: Record<string, unknown> }) => {
+    mutationFn: async ({
+      id,
+      values,
+    }: {
+      id: string;
+      values: { verified?: boolean; active?: boolean };
+    }) => {
       const { error } = await supabase.from("donors").update(values).eq("id", id);
       if (error) throw error;
     },

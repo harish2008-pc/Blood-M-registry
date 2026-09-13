@@ -217,7 +217,7 @@ function PortalPage() {
                   availability: donor.availability,
                   last_donation_date: donor.last_donation_date ?? "",
                   emergency_contact_ok: donor.emergency_contact_ok,
-                  consent_given: donor.consent_given ? true : undefined,
+                  ...(donor.consent_given ? { consent_given: true as const } : {}),
                 }}
               />
             </CardContent>
