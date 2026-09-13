@@ -14,16 +14,203 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      contact_reveals: {
+        Row: {
+          created_at: string
+          donor_id: string
+          id: string
+          revealed_by: string | null
+        }
+        Insert: {
+          created_at?: string
+          donor_id: string
+          id?: string
+          revealed_by?: string | null
+        }
+        Update: {
+          created_at?: string
+          donor_id?: string
+          id?: string
+          revealed_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contact_reveals_donor_id_fkey"
+            columns: ["donor_id"]
+            isOneToOne: false
+            referencedRelation: "donors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      donor_reports: {
+        Row: {
+          created_at: string
+          details: string | null
+          donor_id: string
+          id: string
+          reason: string
+          reporter_id: string | null
+          resolved: boolean
+        }
+        Insert: {
+          created_at?: string
+          details?: string | null
+          donor_id: string
+          id?: string
+          reason: string
+          reporter_id?: string | null
+          resolved?: boolean
+        }
+        Update: {
+          created_at?: string
+          details?: string | null
+          donor_id?: string
+          id?: string
+          reason?: string
+          reporter_id?: string | null
+          resolved?: boolean
+        }
+        Relationships: [
+          {
+            foreignKeyName: "donor_reports_donor_id_fkey"
+            columns: ["donor_id"]
+            isOneToOne: false
+            referencedRelation: "donors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      donors: {
+        Row: {
+          active: boolean
+          availability: Database["public"]["Enums"]["availability_status"]
+          blood_group: Database["public"]["Enums"]["blood_group"]
+          city: string
+          consent_given: boolean
+          contact_number: string
+          created_at: string
+          email: string | null
+          emergency_contact_ok: boolean
+          full_name: string
+          id: string
+          is_demo: boolean
+          last_donation_date: string | null
+          locality: string
+          notes: string | null
+          updated_at: string
+          user_id: string | null
+          verified: boolean
+        }
+        Insert: {
+          active?: boolean
+          availability?: Database["public"]["Enums"]["availability_status"]
+          blood_group: Database["public"]["Enums"]["blood_group"]
+          city: string
+          consent_given?: boolean
+          contact_number: string
+          created_at?: string
+          email?: string | null
+          emergency_contact_ok?: boolean
+          full_name: string
+          id?: string
+          is_demo?: boolean
+          last_donation_date?: string | null
+          locality: string
+          notes?: string | null
+          updated_at?: string
+          user_id?: string | null
+          verified?: boolean
+        }
+        Update: {
+          active?: boolean
+          availability?: Database["public"]["Enums"]["availability_status"]
+          blood_group?: Database["public"]["Enums"]["blood_group"]
+          city?: string
+          consent_given?: boolean
+          contact_number?: string
+          created_at?: string
+          email?: string | null
+          emergency_contact_ok?: boolean
+          full_name?: string
+          id?: string
+          is_demo?: boolean
+          last_donation_date?: string | null
+          locality?: string
+          notes?: string | null
+          updated_at?: string
+          user_id?: string | null
+          verified?: boolean
+        }
+        Relationships: []
+      }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      bootstrap_admin: { Args: never; Returns: boolean }
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
+      reveal_donor_contact: {
+        Args: { p_donor_id: string }
+        Returns: {
+          contact_number: string
+          email: string
+          emergency_contact_ok: boolean
+          full_name: string
+        }[]
+      }
+      search_donors: {
+        Args: {
+          p_availability?: string
+          p_blood_group?: string
+          p_city?: string
+          p_locality?: string
+        }
+        Returns: {
+          availability: Database["public"]["Enums"]["availability_status"]
+          blood_group: Database["public"]["Enums"]["blood_group"]
+          city: string
+          display_name: string
+          id: string
+          is_demo: boolean
+          last_donation_date: string
+          locality: string
+          verified: boolean
+        }[]
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "donor"
+      availability_status: "available" | "unavailable"
+      blood_group: "A+" | "A-" | "B+" | "B-" | "AB+" | "AB-" | "O+" | "O-"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +337,10 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "donor"],
+      availability_status: ["available", "unavailable"],
+      blood_group: ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"],
+    },
   },
 } as const
