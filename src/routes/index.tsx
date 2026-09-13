@@ -67,10 +67,10 @@ function Index() {
     queryKey: ["donor-search", query],
     queryFn: async () => {
       const { data, error } = await supabase.rpc("search_donors", {
-        p_blood_group: query.blood_group || undefined,
-        p_locality: query.locality || undefined,
-        p_city: query.city || undefined,
-        p_availability: query.availability || undefined,
+        p_blood_group: query.blood_group,
+        p_locality: query.locality,
+        p_city: query.city,
+        p_availability: query.availability,
       });
       if (error) throw error;
       return (data ?? []) as DonorSearchResult[];
