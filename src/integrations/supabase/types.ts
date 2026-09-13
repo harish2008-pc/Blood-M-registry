@@ -171,6 +171,21 @@ export type Database = {
     }
     Functions: {
       bootstrap_admin: { Args: never; Returns: boolean }
+      get_donor_public: {
+        Args: { p_id: string }
+        Returns: {
+          availability: Database["public"]["Enums"]["availability_status"]
+          blood_group: Database["public"]["Enums"]["blood_group"]
+          city: string
+          display_name: string
+          emergency_contact_ok: boolean
+          id: string
+          is_demo: boolean
+          last_donation_date: string
+          locality: string
+          verified: boolean
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
