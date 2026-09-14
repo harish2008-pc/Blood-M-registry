@@ -141,16 +141,16 @@ function RootComponent() {
     <QueryClientProvider client={queryClient}>
       <LanguageProvider>
         <AuthProvider>
-        <AuthSync />
-        <div className="flex min-h-screen flex-col">
-          <SiteHeader />
-          <main className="flex-1">
-            {/* Required: nested routes render here. */}
-            <Outlet />
-          </main>
-          <SiteFooter />
-        </div>
-        <Toaster richColors position="top-center" />
+          <AuthSync />
+          <div className="flex min-h-screen flex-col">
+            <SiteHeader />
+            <main className="flex-1">
+              {/* Required: nested routes render here. */}
+              <Outlet />
+            </main>
+            <SiteFooter />
+          </div>
+          <Toaster richColors position="top-center" />
         </AuthProvider>
       </LanguageProvider>
     </QueryClientProvider>
