@@ -10,6 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable/index";
 import { useAuth } from "@/hooks/useAuth";
+import { useT } from "@/lib/i18n";
 
 export const Route = createFileRoute("/auth")({
   head: () => ({
@@ -36,6 +37,7 @@ const credentials = z.object({
 });
 
 function AuthPage() {
+  const t = useT();
   const navigate = useNavigate();
   const { user, loading } = useAuth();
   const [email, setEmail] = useState("");
@@ -50,7 +52,7 @@ function AuthPage() {
   const submit = async (mode: "signin" | "signup") => {
     const parsed = credentials.safeParse({ email, password });
     if (!parsed.success) {
-      setError(parsed.error.issues[0]?.message ?? "Please check your details");
+      setError(t(parsed.error.issues[0]?.message ?? "Please check your details"));
       return;
     }
     setError(null);
@@ -69,11 +71,11 @@ function AuthPage() {
         if (data.session) {
           navigate({ to: "/portal" });
         } else {
-          toast.success("Check your email to confirm your account before signing in.");
+          toast.success(t("Check your email to confirm your account before signing in."));
         }
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Something went wrong");
+      setError(err instanceof Error ? err.message : t("Something went wrong"));
     } finally {
       setBusy(false);
     }
@@ -84,7 +86,7 @@ function AuthPage() {
       redirect_uri: window.location.origin,
     });
     if (result.error) {
-      setError("Google sign-in did not complete. Please try again.");
+      setError(t("Google sign-in did not complete. Please try again."));
       return;
     }
     if (result.redirected) return;
@@ -95,40 +97,41 @@ function AuthPage() {
     <div className="mx-auto flex max-w-md flex-col px-4 py-12">
       <Card className="panel-shadow">
         <CardHeader>
-          <CardTitle>Sign in to the registry</CardTitle>
+          <CardTitle>{t("Sign in to the registry")}</CardTitle>
           <CardDescription>
-            An account is needed to register as a donor, manage your own record, or reveal a
-            donor&apos;s contact number. Searching stays open to everyone.
+            {t(
+              "An account is needed to register as a donor, manage your own record, or reveal a donor's contact number. Searching stays open to everyone.",
+            )}
           </CardDescription>
         </CardHeader>
         <CardContent>
           <Tabs defaultValue="signin">
             <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="signin">Sign in</TabsTrigger>
-              <TabsTrigger value="signup">Create account</TabsTrigger>
+              <TabsTrigger value="signin">{t("Sign in")}</TabsTrigger>
+              <TabsTrigger value="signup">{t("Create account")}</TabsTrigger>
             </TabsList>
 
             <div className="mt-6 space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
+                <Label htmlFor="email">{t("Email")}</Label>
                 <Input
                   id="email"
                   type="email"
                   autoComplete="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="you@example.com"
+                  placeholder={t("you@example.com")}
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="password">Password</Label>
+                <Label htmlFor="password">{t("Password")}</Label>
                 <Input
                   id="password"
                   type="password"
                   autoComplete="current-password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder="At least 8 characters"
+                  placeholder={t("At least 8 characters")}
                 />
               </div>
               {error && (
@@ -140,30 +143,30 @@ function AuthPage() {
 
             <TabsContent value="signin" className="mt-4">
               <Button className="w-full" disabled={busy} onClick={() => submit("signin")}>
-                {busy ? "Signing in…" : "Sign in"}
+                {busy ? t("Signing in…") : t("Sign in")}
               </Button>
             </TabsContent>
             <TabsContent value="signup" className="mt-4">
               <Button className="w-full" disabled={busy} onClick={() => submit("signup")}>
-                {busy ? "Creating account…" : "Create account"}
+                {busy ? t("Creating account…") : t("Create account")}
               </Button>
             </TabsContent>
           </Tabs>
 
           <div className="my-6 flex items-center gap-3 text-xs text-muted-foreground">
             <span className="h-px flex-1 bg-border" />
-            or
+            {t("or")}
             <span className="h-px flex-1 bg-border" />
           </div>
 
           <Button variant="outline" className="w-full" onClick={googleSignIn}>
-            Continue with Google
+            {t("Continue with Google")}
           </Button>
 
           <p className="mt-6 text-xs text-muted-foreground">
-            By creating an account you agree to our{" "}
+            {t("By creating an account you agree to our")}{" "}
             <Link to="/privacy" className="underline">
-              privacy and consent terms
+              {t("privacy and consent terms")}
             </Link>
             .
           </p>

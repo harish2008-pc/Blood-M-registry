@@ -7,6 +7,7 @@ import { DonorForm } from "@/components/DonorForm";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { EMERGENCY_NOTICE, type DonorFormValues } from "@/lib/registry";
+import { useT } from "@/lib/i18n";
 
 export const Route = createFileRoute("/_authenticated/register")({
   head: () => ({
@@ -28,6 +29,7 @@ export const Route = createFileRoute("/_authenticated/register")({
 });
 
 function RegisterPage() {
+  const t = useT();
   const { user } = useAuth();
   const navigate = useNavigate();
 
@@ -49,33 +51,34 @@ function RegisterPage() {
       if (error) throw error;
     },
     onSuccess: () => {
-      toast.success("You're on the registry. Thank you.");
+      toast.success(t("You're on the registry. Thank you."));
       navigate({ to: "/portal" });
     },
-    onError: () => toast.error("Could not save your registration. Please try again."),
+    onError: () => toast.error(t("Could not save your registration. Please try again.")),
   });
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-10">
-      <h1 className="text-3xl font-semibold">Register as a donor</h1>
+      <h1 className="text-3xl font-semibold">{t("Register as a donor")}</h1>
       <p className="mt-2 text-muted-foreground">
-        Your details are only used to connect you with someone who needs blood. You stay in control
-        and can leave the registry at any time.
+        {t(
+          "Your details are only used to connect you with someone who needs blood. You stay in control and can leave the registry at any time.",
+        )}
       </p>
 
       <Alert className="mt-6">
-        <AlertTitle>Before you register</AlertTitle>
-        <AlertDescription>{EMERGENCY_NOTICE}</AlertDescription>
+        <AlertTitle>{t("Before you register")}</AlertTitle>
+        <AlertDescription>{t(EMERGENCY_NOTICE)}</AlertDescription>
       </Alert>
 
       <Card className="mt-6 panel-shadow">
         <CardHeader>
-          <CardTitle>Your details</CardTitle>
-          <CardDescription>All fields marked optional can be left blank.</CardDescription>
+          <CardTitle>{t("Your details")}</CardTitle>
+          <CardDescription>{t("All fields marked optional can be left blank.")}</CardDescription>
         </CardHeader>
         <CardContent>
           <DonorForm
-            submitLabel="Join the registry"
+            submitLabel={t("Join the registry")}
             pending={create.isPending}
             onSubmit={(values) => create.mutateAsync(values)}
           />
