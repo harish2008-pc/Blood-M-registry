@@ -1,0 +1,1 @@
+REVOKE EXECUTE ON FUNCTION public.log_report_submitted() FROM anon, authenticated, public;
