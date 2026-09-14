@@ -20,8 +20,7 @@ export function LanguageSwitcher({ className }: { className?: string }) {
       <Select value={lang} onValueChange={(value) => setLang(value as Lang)}>
         <SelectTrigger
           id="language-select"
-          size="sm"
-          className="w-auto gap-2"
+          className="h-9 w-auto gap-2"
           aria-label={t("Language")}
         >
           <Languages className="size-4 shrink-0" aria-hidden="true" />
