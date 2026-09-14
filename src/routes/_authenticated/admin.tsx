@@ -17,10 +17,24 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
-import { availabilityLabel, toCsv } from "@/lib/registry";
+import {
+  availabilityLabel,
+  REPORT_STATUSES,
+  reportStatusLabel,
+  toCsv,
+  type ReportStatus,
+} from "@/lib/registry";
 
 export const Route = createFileRoute("/_authenticated/admin")({
   head: () => ({
