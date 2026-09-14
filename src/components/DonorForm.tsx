@@ -11,7 +11,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { BLOOD_GROUPS, AVAILABILITY, donorSchema, type DonorFormValues } from "@/lib/registry";
+import { BLOOD_GROUPS, AVAILABILITY, availabilityLabel, donorSchema, type DonorFormValues } from "@/lib/registry";
+import { useT } from "@/lib/i18n";
 
 type Props = {
   defaultValues?: Partial<DonorFormValues>;
@@ -21,6 +22,7 @@ type Props = {
 };
 
 export function DonorForm({ defaultValues, submitLabel, onSubmit, pending }: Props) {
+  const t = useT();
   const form = useForm<DonorFormValues>({
     resolver: zodResolver(donorSchema),
     defaultValues: {
@@ -42,7 +44,7 @@ export function DonorForm({ defaultValues, submitLabel, onSubmit, pending }: Pro
   const err = (name: keyof DonorFormValues) =>
     errors[name] ? (
       <p role="alert" className="text-sm text-destructive">
-        {String(errors[name]?.message)}
+        {t(String(errors[name]?.message))}
       </p>
     ) : null;
 
@@ -50,25 +52,25 @@ export function DonorForm({ defaultValues, submitLabel, onSubmit, pending }: Pro
     <form className="space-y-6" onSubmit={handleSubmit(onSubmit)} noValidate>
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="space-y-2 sm:col-span-2">
-          <Label htmlFor="full_name">Full name</Label>
+          <Label htmlFor="full_name">{t("Full name")}</Label>
           <Input id="full_name" autoComplete="name" {...register("full_name")} />
           {err("full_name")}
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="locality">Area / locality</Label>
-          <Input id="locality" placeholder="e.g. Indiranagar" {...register("locality")} />
+          <Label htmlFor="locality">{t("Area / locality")}</Label>
+          <Input id="locality" placeholder={t("e.g. Indiranagar")} {...register("locality")} />
           {err("locality")}
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="city">City</Label>
-          <Input id="city" placeholder="e.g. Bengaluru" {...register("city")} />
+          <Label htmlFor="city">{t("City")}</Label>
+          <Input id="city" placeholder={t("e.g. Bengaluru")} {...register("city")} />
           {err("city")}
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="contact_number">Contact number</Label>
+          <Label htmlFor="contact_number">{t("Contact number")}</Label>
           <Input
             id="contact_number"
             inputMode="tel"
@@ -76,20 +78,21 @@ export function DonorForm({ defaultValues, submitLabel, onSubmit, pending }: Pro
             {...register("contact_number")}
           />
           <p className="text-xs text-muted-foreground">
-            Never shown in search results. Only revealed when a signed-in user asks, and each
-            request is logged.
+            {t(
+              "Never shown in search results. Only revealed when a signed-in user asks, and each request is logged.",
+            )}
           </p>
           {err("contact_number")}
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="email">Email (optional)</Label>
+          <Label htmlFor="email">{t("Email (optional)")}</Label>
           <Input id="email" type="email" autoComplete="email" {...register("email")} />
           {err("email")}
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="blood_group">Blood group</Label>
+          <Label htmlFor="blood_group">{t("Blood group")}</Label>
           <Select
             value={watch("blood_group")}
             onValueChange={(value) =>
@@ -99,7 +102,7 @@ export function DonorForm({ defaultValues, submitLabel, onSubmit, pending }: Pro
             }
           >
             <SelectTrigger id="blood_group">
-              <SelectValue placeholder="Select blood group" />
+              <SelectValue placeholder={t("Select blood group")} />
             </SelectTrigger>
             <SelectContent>
               {BLOOD_GROUPS.map((group) => (
@@ -113,7 +116,7 @@ export function DonorForm({ defaultValues, submitLabel, onSubmit, pending }: Pro
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="availability">Availability</Label>
+          <Label htmlFor="availability">{t("Availability")}</Label>
           <Select
             value={watch("availability")}
             onValueChange={(value) =>
@@ -123,12 +126,12 @@ export function DonorForm({ defaultValues, submitLabel, onSubmit, pending }: Pro
             }
           >
             <SelectTrigger id="availability">
-              <SelectValue placeholder="Select availability" />
+              <SelectValue placeholder={t("Select availability")} />
             </SelectTrigger>
             <SelectContent>
               {AVAILABILITY.map((option) => (
                 <SelectItem key={option.value} value={option.value}>
-                  {option.label}
+                  {t(availabilityLabel(option.value))}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -137,7 +140,7 @@ export function DonorForm({ defaultValues, submitLabel, onSubmit, pending }: Pro
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="last_donation_date">Last donation date (optional)</Label>
+          <Label htmlFor="last_donation_date">{t("Last donation date (optional)")}</Label>
           <Input id="last_donation_date" type="date" {...register("last_donation_date")} />
           {err("last_donation_date")}
         </div>
@@ -151,7 +154,7 @@ export function DonorForm({ defaultValues, submitLabel, onSubmit, pending }: Pro
             onCheckedChange={(checked) => setValue("emergency_contact_ok", checked === true)}
           />
           <Label htmlFor="emergency_contact_ok" className="text-sm leading-snug font-normal">
-            I am happy to be contacted at short notice in an emergency.
+            {t("I am happy to be contacted at short notice in an emergency.")}
           </Label>
         </div>
 
@@ -164,16 +167,16 @@ export function DonorForm({ defaultValues, submitLabel, onSubmit, pending }: Pro
             }
           />
           <Label htmlFor="consent_given" className="text-sm leading-snug font-normal">
-            I consent to my shortened name, blood group, area, city and availability being listed
-            publicly, and to my contact number being released to signed-in users who request it. I
-            can withdraw this consent at any time.
+            {t(
+              "I consent to my shortened name, blood group, area, city and availability being listed publicly, and to my contact number being released to signed-in users who request it. I can withdraw this consent at any time.",
+            )}
           </Label>
         </div>
         {err("consent_given")}
       </div>
 
       <Button type="submit" disabled={pending}>
-        {pending ? "Saving…" : submitLabel}
+        {pending ? t("Saving…") : submitLabel}
       </Button>
     </form>
   );

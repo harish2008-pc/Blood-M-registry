@@ -5,6 +5,8 @@ import { useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { useAuth } from "@/hooks/useAuth";
+import { useT } from "@/lib/i18n";
+import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { supabase } from "@/integrations/supabase/client";
 
 const navItems = [
@@ -14,6 +16,7 @@ const navItems = [
 ];
 
 function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
+  const t = useT();
   return (
     <>
       {navItems.map((item) => (
@@ -25,7 +28,7 @@ function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
           activeProps={{ className: "bg-accent text-accent-foreground" }}
           activeOptions={{ exact: item.to === "/" }}
         >
-          {item.label}
+          {t(item.label)}
         </Link>
       ))}
     </>
@@ -34,6 +37,7 @@ function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
 
 export function SiteHeader() {
   const { user, isAdmin } = useAuth();
+  const t = useT();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [open, setOpen] = useState(false);
@@ -48,61 +52,63 @@ export function SiteHeader() {
   return (
     <header className="sticky top-0 z-40 border-b border-border bg-background/90 backdrop-blur">
       <div className="mx-auto flex h-16 max-w-6xl items-center gap-3 px-4">
-        <Link to="/" className="flex items-center gap-2" aria-label="BloodBridge home">
+        <Link to="/" className="flex items-center gap-2" aria-label={t("BloodBridge home")}>
           <span className="flex size-9 items-center justify-center rounded-lg bg-primary text-primary-foreground">
             <Droplet className="size-5" aria-hidden="true" />
           </span>
           <span className="text-sm leading-tight font-semibold sm:text-base">
             BloodBridge
-            <span className="block text-xs font-normal text-muted-foreground">Donor registry</span>
+            <span className="block text-xs font-normal text-muted-foreground">{t("Donor registry")}</span>
           </span>
         </Link>
 
-        <nav className="ml-6 hidden items-center gap-1 md:flex" aria-label="Main">
+        <nav className="ml-6 hidden items-center gap-1 md:flex" aria-label={t("Main navigation")}>
           <NavLinks />
         </nav>
 
         <div className="ml-auto hidden items-center gap-2 md:flex">
+          <LanguageSwitcher />
           {user ? (
             <>
               <Button asChild variant="ghost" size="sm">
-                <Link to="/portal">Donor portal</Link>
+                <Link to="/portal">{t("Donor portal")}</Link>
               </Button>
               {isAdmin && (
                 <Button asChild variant="ghost" size="sm">
-                  <Link to="/admin">Admin</Link>
+                  <Link to="/admin">{t("Admin")}</Link>
                 </Button>
               )}
               <Button variant="outline" size="sm" onClick={signOut}>
-                Sign out
+                {t("Sign out")}
               </Button>
             </>
           ) : (
             <Button asChild variant="outline" size="sm">
-              <Link to="/auth">Sign in</Link>
+              <Link to="/auth">{t("Sign in")}</Link>
             </Button>
           )}
           <Button asChild size="sm">
-            <Link to="/register">Register as donor</Link>
+            <Link to="/register">{t("Register as donor")}</Link>
           </Button>
         </div>
 
         <Sheet open={open} onOpenChange={setOpen}>
           <SheetTrigger asChild className="ml-auto md:hidden">
-            <Button variant="outline" size="icon" aria-label="Open menu">
+            <Button variant="outline" size="icon" aria-label={t("Open menu")}>
               <Menu className="size-4" />
             </Button>
           </SheetTrigger>
           <SheetContent side="right" className="w-72">
-            <SheetTitle className="px-4 pt-4">Menu</SheetTitle>
+            <SheetTitle className="px-4 pt-4">{t("Menu")}</SheetTitle>
             <div className="flex flex-col gap-1 p-4">
+              <LanguageSwitcher className="mb-2" />
               <NavLinks onNavigate={() => setOpen(false)} />
               <Link
                 to="/register"
                 onClick={() => setOpen(false)}
                 className="rounded-md px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-accent"
               >
-                Register as donor
+                {t("Register as donor")}
               </Link>
               {user ? (
                 <>
@@ -111,7 +117,7 @@ export function SiteHeader() {
                     onClick={() => setOpen(false)}
                     className="rounded-md px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-accent"
                   >
-                    Donor portal
+                    {t("Donor portal")}
                   </Link>
                   {isAdmin && (
                     <Link
@@ -119,7 +125,7 @@ export function SiteHeader() {
                       onClick={() => setOpen(false)}
                       className="rounded-md px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-accent"
                     >
-                      Admin
+                      {t("Admin")}
                     </Link>
                   )}
                   <Button
@@ -130,12 +136,12 @@ export function SiteHeader() {
                       void signOut();
                     }}
                   >
-                    Sign out
-                  </Button>
+                {t("Sign out")}
+              </Button>
                 </>
               ) : (
                 <Button asChild className="mt-2" onClick={() => setOpen(false)}>
-                  <Link to="/auth">Sign in</Link>
+                  <Link to="/auth">{t("Sign in")}</Link>
                 </Button>
               )}
             </div>

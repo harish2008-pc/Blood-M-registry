@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
+import { useT } from "@/lib/i18n";
 import { EMERGENCY_NOTICE } from "@/lib/registry";
 
 export const Route = createFileRoute("/privacy")({
@@ -50,30 +51,32 @@ const sections = [
 ];
 
 function Privacy() {
+  const t = useT();
   return (
     <div className="mx-auto max-w-3xl px-4 py-12">
-      <h1 className="text-3xl font-semibold">Privacy &amp; consent</h1>
+      <h1 className="text-3xl font-semibold">{t("Privacy & consent")}</h1>
       <p className="mt-3 text-muted-foreground">
-        This registry only exists because volunteers choose to be listed. We keep the data minimal
-        and the exposure low.
+        {t(
+          "This registry only exists because volunteers choose to be listed. We keep the data minimal and the exposure low.",
+        )}
       </p>
 
       <div className="mt-8 space-y-6">
         {sections.map((section) => (
           <section key={section.title}>
-            <h2 className="text-lg font-semibold">{section.title}</h2>
-            <p className="mt-1 text-sm text-muted-foreground">{section.body}</p>
+            <h2 className="text-lg font-semibold">{t(section.title)}</h2>
+            <p className="mt-1 text-sm text-muted-foreground">{t(section.body)}</p>
           </section>
         ))}
       </div>
 
       <Alert className="mt-8">
-        <AlertTitle>Emergency guidance</AlertTitle>
-        <AlertDescription>{EMERGENCY_NOTICE}</AlertDescription>
+        <AlertTitle>{t("Emergency guidance")}</AlertTitle>
+        <AlertDescription>{t(EMERGENCY_NOTICE)}</AlertDescription>
       </Alert>
 
       <Button asChild className="mt-8" variant="outline">
-        <Link to="/how-it-works">Read how it works</Link>
+        <Link to="/how-it-works">{t("Read how it works")}</Link>
       </Button>
     </div>
   );

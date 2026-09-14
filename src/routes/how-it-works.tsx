@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { useT } from "@/lib/i18n";
 import { EMERGENCY_NOTICE, MEDICAL_NOTICE } from "@/lib/registry";
 
 export const Route = createFileRoute("/how-it-works")({
@@ -47,41 +48,43 @@ const steps = [
 ];
 
 function HowItWorks() {
+  const t = useT();
   return (
     <div className="mx-auto max-w-3xl px-4 py-12">
-      <h1 className="text-3xl font-semibold">How it works</h1>
+      <h1 className="text-3xl font-semibold">{t("How it works")}</h1>
       <p className="mt-3 text-muted-foreground">
-        A simple, consent-based directory that helps families and hospitals reach willing donors
-        faster.
+        {t(
+          "A simple, consent-based directory that helps families and hospitals reach willing donors faster.",
+        )}
       </p>
 
       <Alert className="mt-6">
-        <AlertTitle>Emergency guidance</AlertTitle>
-        <AlertDescription>{EMERGENCY_NOTICE}</AlertDescription>
+        <AlertTitle>{t("Emergency guidance")}</AlertTitle>
+        <AlertDescription>{t(EMERGENCY_NOTICE)}</AlertDescription>
       </Alert>
 
       <div className="mt-8 space-y-4">
         {steps.map((step) => (
           <Card key={step.title}>
             <CardHeader>
-              <CardTitle className="text-base">{step.title}</CardTitle>
+              <CardTitle className="text-base">{t(step.title)}</CardTitle>
             </CardHeader>
-            <CardContent className="text-sm text-muted-foreground">{step.body}</CardContent>
+            <CardContent className="text-sm text-muted-foreground">{t(step.body)}</CardContent>
           </Card>
         ))}
       </div>
 
       <Alert variant="destructive" className="mt-8">
-        <AlertTitle>Medical compatibility</AlertTitle>
-        <AlertDescription>{MEDICAL_NOTICE}</AlertDescription>
+        <AlertTitle>{t("Medical compatibility")}</AlertTitle>
+        <AlertDescription>{t(MEDICAL_NOTICE)}</AlertDescription>
       </Alert>
 
       <div className="mt-8 flex flex-wrap gap-3">
         <Button asChild>
-          <Link to="/register">Register as a donor</Link>
+          <Link to="/register">{t("Register as a donor")}</Link>
         </Button>
         <Button asChild variant="outline">
-          <Link to="/">Find a donor</Link>
+          <Link to="/">{t("Find a donor")}</Link>
         </Button>
       </div>
     </div>

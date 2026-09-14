@@ -20,6 +20,7 @@ import {
 import { DonorForm } from "@/components/DonorForm";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { useT } from "@/lib/i18n";
 import { availabilityLabel, type DonorFormValues } from "@/lib/registry";
 
 export const Route = createFileRoute("/_authenticated/portal")({
@@ -42,6 +43,7 @@ export const Route = createFileRoute("/_authenticated/portal")({
 });
 
 function PortalPage() {
+  const t = useT();
   const { user } = useAuth();
   const queryClient = useQueryClient();
 
@@ -81,10 +83,10 @@ function PortalPage() {
       if (error) throw error;
     },
     onSuccess: () => {
-      toast.success("Your record has been updated.");
+      toast.success(t("Your record has been updated."));
       void queryClient.invalidateQueries({ queryKey: ["my-donor"] });
     },
-    onError: () => toast.error("Could not save your changes."),
+    onError: () => toast.error(t("Could not save your changes.")),
   });
 
   const toggleAvailability = useMutation({
@@ -97,7 +99,7 @@ function PortalPage() {
       if (error) throw error;
     },
     onSuccess: () => {
-      toast.success("Availability updated.");
+      toast.success(t("Availability updated."));
       void queryClient.invalidateQueries({ queryKey: ["my-donor"] });
     },
   });
@@ -111,7 +113,7 @@ function PortalPage() {
       if (error) throw error;
     },
     onSuccess: () => {
-      toast.success("Consent withdrawn. You are no longer listed.");
+      toast.success(t("Consent withdrawn. You are no longer listed."));
       void queryClient.invalidateQueries({ queryKey: ["my-donor"] });
     },
   });
@@ -122,16 +124,16 @@ function PortalPage() {
       if (error) throw error;
     },
     onSuccess: () => {
-      toast.success("Your record has been deleted.");
+      toast.success(t("Your record has been deleted."));
       void queryClient.invalidateQueries({ queryKey: ["my-donor"] });
     },
   });
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-10">
-      <h1 className="text-3xl font-semibold">Donor portal</h1>
+      <h1 className="text-3xl font-semibold">{t("Donor portal")}</h1>
       <p className="mt-2 text-muted-foreground">
-        Signed in as {user?.email ?? "your account"}.
+        {t("Signed in as")} {user?.email ?? t("your account")}.
       </p>
 
       {donorQuery.isLoading && <Skeleton className="mt-6 h-64 w-full" />}
@@ -139,15 +141,16 @@ function PortalPage() {
       {!donorQuery.isLoading && !donor && (
         <Card className="mt-6">
           <CardHeader>
-            <CardTitle>You are not on the registry yet</CardTitle>
+            <CardTitle>{t("You are not on the registry yet")}</CardTitle>
             <CardDescription>
-              Add your details so hospitals and families can reach you when your blood group is
-              needed.
+              {t(
+                "Add your details so hospitals and families can reach you when your blood group is needed.",
+              )}
             </CardDescription>
           </CardHeader>
           <CardContent>
             <Button asChild>
-              <Link to="/register">Register as a donor</Link>
+              <Link to="/register">{t("Register as a donor")}</Link>
             </Button>
           </CardContent>
         </Card>
@@ -160,10 +163,12 @@ function PortalPage() {
               <div className="flex flex-wrap items-center gap-2">
                 <Badge className="text-base">{donor.blood_group}</Badge>
                 <Badge variant={donor.availability === "available" ? "secondary" : "outline"}>
-                  {availabilityLabel(donor.availability)}
+                  {t(availabilityLabel(donor.availability))}
                 </Badge>
-                {donor.verified && <Badge variant="secondary">Verified</Badge>}
-                {!donor.consent_given && <Badge variant="destructive">Consent withdrawn</Badge>}
+                {donor.verified && <Badge variant="secondary">{t("Verified")}</Badge>}
+                {!donor.consent_given && (
+                  <Badge variant="destructive">{t("Consent withdrawn")}</Badge>
+                )}
               </div>
               <CardTitle className="mt-2">{donor.full_name}</CardTitle>
               <CardDescription>
@@ -177,12 +182,12 @@ function PortalPage() {
                 disabled={toggleAvailability.isPending || !donor.consent_given}
               >
                 {donor.availability === "available"
-                  ? "Mark me temporarily unavailable"
-                  : "Mark me available"}
+                  ? t("Mark me temporarily unavailable")
+                  : t("Mark me available")}
               </Button>
               <Button asChild variant="ghost">
                 <Link to="/donors/$id" params={{ id: donor.id }}>
-                  View my public card
+                  {t("View my public card")}
                 </Link>
               </Button>
             </CardContent>
@@ -190,21 +195,21 @@ function PortalPage() {
 
           {!donor.consent_given && (
             <Alert>
-              <AlertTitle>You are hidden from search</AlertTitle>
+              <AlertTitle>{t("You are hidden from search")}</AlertTitle>
               <AlertDescription>
-                Save the form below to give consent again, or delete your record permanently.
+                {t("Save the form below to give consent again, or delete your record permanently.")}
               </AlertDescription>
             </Alert>
           )}
 
           <Card>
             <CardHeader>
-              <CardTitle>Update your details</CardTitle>
-              <CardDescription>Changes appear in search straight away.</CardDescription>
+              <CardTitle>{t("Update your details")}</CardTitle>
+              <CardDescription>{t("Changes appear in search straight away.")}</CardDescription>
             </CardHeader>
             <CardContent>
               <DonorForm
-                submitLabel="Save changes"
+                submitLabel={t("Save changes")}
                 pending={update.isPending}
                 onSubmit={(values) => update.mutateAsync(values)}
                 defaultValues={{
@@ -225,9 +230,9 @@ function PortalPage() {
 
           <Card>
             <CardHeader>
-              <CardTitle>Leave the registry</CardTitle>
+              <CardTitle>{t("Leave the registry")}</CardTitle>
               <CardDescription>
-                Withdrawing consent hides you immediately. Deleting removes your record completely.
+                {t("Withdrawing consent hides you immediately. Deleting removes your record completely.")}
               </CardDescription>
             </CardHeader>
             <CardContent className="flex flex-wrap gap-3">
@@ -236,24 +241,23 @@ function PortalPage() {
                 onClick={() => withdraw.mutate()}
                 disabled={withdraw.isPending || !donor.consent_given}
               >
-                Withdraw consent
+                {t("Withdraw consent")}
               </Button>
               <AlertDialog>
                 <AlertDialogTrigger asChild>
-                  <Button variant="destructive">Delete my record</Button>
+                  <Button variant="destructive">{t("Delete my record")}</Button>
                 </AlertDialogTrigger>
                 <AlertDialogContent>
                   <AlertDialogHeader>
-                    <AlertDialogTitle>Delete your donor record?</AlertDialogTitle>
+                    <AlertDialogTitle>{t("Delete your donor record?")}</AlertDialogTitle>
                     <AlertDialogDescription>
-                      This permanently removes your details from the registry. This cannot be
-                      undone.
+                      {t("This permanently removes your details from the registry. This cannot be undone.")}
                     </AlertDialogDescription>
                   </AlertDialogHeader>
                   <AlertDialogFooter>
-                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogCancel>{t("Cancel")}</AlertDialogCancel>
                     <AlertDialogAction onClick={() => remove.mutate()}>
-                      Delete permanently
+                      {t("Delete permanently")}
                     </AlertDialogAction>
                   </AlertDialogFooter>
                 </AlertDialogContent>
