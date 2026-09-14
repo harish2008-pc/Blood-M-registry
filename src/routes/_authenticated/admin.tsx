@@ -198,6 +198,9 @@ function AdminPage() {
       : true,
   );
   const reports = reportsQuery.data ?? [];
+  const events = eventsQuery.data ?? [];
+  const visibleReports =
+    statusFilter === "all" ? reports : reports.filter((r) => r.status === statusFilter);
 
   const exportCsv = () => {
     const csv = toCsv(
