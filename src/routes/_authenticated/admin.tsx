@@ -72,6 +72,19 @@ function AdminPage() {
     enabled: isAdmin,
   });
 
+  const eventsQuery = useQuery({
+    queryKey: ["admin-report-events"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("report_events")
+        .select("*")
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      return data;
+    },
+    enabled: isAdmin,
+  });
+
   const patch = useMutation({
     mutationFn: async ({
       id,
