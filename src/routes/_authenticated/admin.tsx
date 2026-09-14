@@ -299,38 +299,131 @@ function AdminPage() {
         </TabsContent>
 
         <TabsContent value="reports" className="mt-6 space-y-4">
+          <div className="flex flex-wrap gap-2">
+            {(["all", ...REPORT_STATUSES.map((s) => s.value)] as const).map((value) => (
+              <Button
+                key={value}
+                size="sm"
+                variant={statusFilter === value ? "default" : "outline"}
+                onClick={() => setStatusFilter(value)}
+              >
+                {value === "all" ? "All" : reportStatusLabel(value)}
+                <span className="ml-2 text-xs opacity-70">
+                  {value === "all"
+                    ? reports.length
+                    : reports.filter((r) => r.status === value).length}
+                </span>
+              </Button>
+            ))}
+          </div>
+
           {reportsQuery.isLoading && <Skeleton className="h-40 w-full" />}
-          {!reportsQuery.isLoading && reports.length === 0 && (
+          {!reportsQuery.isLoading && visibleReports.length === 0 && (
             <p className="rounded-lg border border-dashed border-border p-8 text-center text-sm text-muted-foreground">
-              No reports yet. Records flagged by the public will appear here.
+              No reports in this queue. Records flagged by the public will appear here.
             </p>
           )}
-          {reports.map((report) => (
-            <Card key={report.id}>
-              <CardHeader>
-                <CardTitle className="text-base">{report.reason}</CardTitle>
-                <CardDescription>
-                  {new Date(report.created_at).toLocaleString()} ·{" "}
-                  {report.resolved ? "Reviewed" : "Open"}
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-3 text-sm">
-                {report.details && <p className="text-muted-foreground">{report.details}</p>}
-                <div className="flex flex-wrap gap-2">
-                  <Button asChild size="sm" variant="outline">
-                    <Link to="/donors/$id" params={{ id: report.donor_id }}>
-                      Open record
-                    </Link>
-                  </Button>
-                  {!report.resolved && (
-                    <Button size="sm" onClick={() => resolveReport.mutate(report.id)}>
-                      Mark reviewed
-                    </Button>
+          {visibleReports.map((report) => {
+            const history = events.filter((e) => e.report_id === report.id);
+            return (
+              <Card key={report.id}>
+                <CardHeader>
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <CardTitle className="text-base">{report.reason}</CardTitle>
+                    <Badge variant={report.status === "open" ? "default" : "outline"}>
+                      {reportStatusLabel(report.status)}
+                    </Badge>
+                  </div>
+                  <CardDescription>
+                    Reported {new Date(report.created_at).toLocaleString()}
+                    {report.reviewed_at
+                      ? ` · last reviewed ${new Date(report.reviewed_at).toLocaleString()}`
+                      : ""}
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4 text-sm">
+                  {report.details && <p className="text-muted-foreground">{report.details}</p>}
+                  {report.admin_notes && (
+                    <p className="rounded-md bg-muted p-3 text-muted-foreground">
+                      Latest note: {report.admin_notes}
+                    </p>
                   )}
-                </div>
-              </CardContent>
-            </Card>
-          ))}
+
+                  <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_200px] sm:items-end">
+                    <div className="space-y-2">
+                      <Label htmlFor={`note-${report.id}`}>Review note (optional)</Label>
+                      <Textarea
+                        id={`note-${report.id}`}
+                        rows={2}
+                        value={notes[report.id] ?? ""}
+                        onChange={(e) =>
+                          setNotes((prev) => ({ ...prev, [report.id]: e.target.value }))
+                        }
+                        placeholder="What did you check or change?"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor={`status-${report.id}`}>Set status</Label>
+                      <Select
+                        value={report.status}
+                        onValueChange={(status) =>
+                          review.mutate({
+                            id: report.id,
+                            status: status as ReportStatus,
+                            note: notes[report.id] ?? "",
+                          })
+                        }
+                      >
+                        <SelectTrigger id={`status-${report.id}`}>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {REPORT_STATUSES.map((s) => (
+                            <SelectItem key={s.value} value={s.value}>
+                              {s.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+
+                  <div className="flex flex-wrap gap-2">
+                    <Button asChild size="sm" variant="outline">
+                      <Link to="/donors/$id" params={{ id: report.donor_id }}>
+                        Open record
+                      </Link>
+                    </Button>
+                  </div>
+
+                  <div>
+                    <h3 className="mb-2 text-xs font-semibold tracking-wide text-muted-foreground uppercase">
+                      Status history
+                    </h3>
+                    <ol className="space-y-2 border-l border-border pl-4">
+                      {history.length === 0 && (
+                        <li className="text-muted-foreground">No changes recorded yet.</li>
+                      )}
+                      {history.map((event) => (
+                        <li key={event.id} className="text-sm">
+                          <span className="font-medium">
+                            {event.from_status
+                              ? `${reportStatusLabel(event.from_status)} → ${reportStatusLabel(event.to_status)}`
+                              : reportStatusLabel(event.to_status)}
+                          </span>
+                          <span className="text-muted-foreground">
+                            {" "}
+                            · {new Date(event.created_at).toLocaleString()}
+                          </span>
+                          {event.note && <p className="text-muted-foreground">{event.note}</p>}
+                        </li>
+                      ))}
+                    </ol>
+                  </div>
+                </CardContent>
+              </Card>
+            );
+          })}
         </TabsContent>
       </Tabs>
     </div>
