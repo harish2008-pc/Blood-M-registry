@@ -45,6 +45,7 @@ export type Database = {
       }
       donor_reports: {
         Row: {
+          admin_notes: string | null
           created_at: string
           details: string | null
           donor_id: string
@@ -52,8 +53,13 @@ export type Database = {
           reason: string
           reporter_id: string | null
           resolved: boolean
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: Database["public"]["Enums"]["report_status"]
+          updated_at: string
         }
         Insert: {
+          admin_notes?: string | null
           created_at?: string
           details?: string | null
           donor_id: string
@@ -61,8 +67,13 @@ export type Database = {
           reason: string
           reporter_id?: string | null
           resolved?: boolean
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: Database["public"]["Enums"]["report_status"]
+          updated_at?: string
         }
         Update: {
+          admin_notes?: string | null
           created_at?: string
           details?: string | null
           donor_id?: string
@@ -70,6 +81,10 @@ export type Database = {
           reason?: string
           reporter_id?: string | null
           resolved?: boolean
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: Database["public"]["Enums"]["report_status"]
+          updated_at?: string
         }
         Relationships: [
           {
@@ -144,6 +159,44 @@ export type Database = {
         }
         Relationships: []
       }
+      report_events: {
+        Row: {
+          actor_id: string | null
+          created_at: string
+          from_status: Database["public"]["Enums"]["report_status"] | null
+          id: string
+          note: string | null
+          report_id: string
+          to_status: Database["public"]["Enums"]["report_status"]
+        }
+        Insert: {
+          actor_id?: string | null
+          created_at?: string
+          from_status?: Database["public"]["Enums"]["report_status"] | null
+          id?: string
+          note?: string | null
+          report_id: string
+          to_status: Database["public"]["Enums"]["report_status"]
+        }
+        Update: {
+          actor_id?: string | null
+          created_at?: string
+          from_status?: Database["public"]["Enums"]["report_status"] | null
+          id?: string
+          note?: string | null
+          report_id?: string
+          to_status?: Database["public"]["Enums"]["report_status"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "report_events_report_id_fkey"
+            columns: ["report_id"]
+            isOneToOne: false
+            referencedRelation: "donor_reports"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_roles: {
         Row: {
           created_at: string
@@ -202,6 +255,14 @@ export type Database = {
           full_name: string
         }[]
       }
+      review_report: {
+        Args: {
+          p_note?: string
+          p_report_id: string
+          p_status: Database["public"]["Enums"]["report_status"]
+        }
+        Returns: undefined
+      }
       search_donors: {
         Args: {
           p_availability?: string
@@ -226,6 +287,7 @@ export type Database = {
       app_role: "admin" | "donor"
       availability_status: "available" | "unavailable"
       blood_group: "A+" | "A-" | "B+" | "B-" | "AB+" | "AB-" | "O+" | "O-"
+      report_status: "open" | "in_review" | "action_taken" | "dismissed"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -356,6 +418,7 @@ export const Constants = {
       app_role: ["admin", "donor"],
       availability_status: ["available", "unavailable"],
       blood_group: ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"],
+      report_status: ["open", "in_review", "action_taken", "dismissed"],
     },
   },
 } as const

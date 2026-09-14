@@ -17,10 +17,24 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
-import { availabilityLabel, toCsv } from "@/lib/registry";
+import {
+  availabilityLabel,
+  REPORT_STATUSES,
+  reportStatusLabel,
+  toCsv,
+  type ReportStatus,
+} from "@/lib/registry";
 
 export const Route = createFileRoute("/_authenticated/admin")({
   head: () => ({
@@ -45,6 +59,8 @@ function AdminPage() {
   const { isAdmin, loading } = useAuth();
   const queryClient = useQueryClient();
   const [filter, setFilter] = useState("");
+  const [statusFilter, setStatusFilter] = useState<ReportStatus | "all">("all");
+  const [notes, setNotes] = useState<Record<string, string>>({});
 
   const donorsQuery = useQuery({
     queryKey: ["admin-donors"],
@@ -72,6 +88,19 @@ function AdminPage() {
     enabled: isAdmin,
   });
 
+  const eventsQuery = useQuery({
+    queryKey: ["admin-report-events"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("report_events")
+        .select("*")
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      return data;
+    },
+    enabled: isAdmin,
+  });
+
   const patch = useMutation({
     mutationFn: async ({
       id,
@@ -90,15 +119,30 @@ function AdminPage() {
     onError: () => toast.error("Update failed."),
   });
 
-  const resolveReport = useMutation({
-    mutationFn: async (id: string) => {
-      const { error } = await supabase.from("donor_reports").update({ resolved: true }).eq("id", id);
+  const review = useMutation({
+    mutationFn: async ({
+      id,
+      status,
+      note,
+    }: {
+      id: string;
+      status: ReportStatus;
+      note: string;
+    }) => {
+      const { error } = await supabase.rpc("review_report", {
+        p_report_id: id,
+        p_status: status,
+        p_note: note,
+      });
       if (error) throw error;
     },
-    onSuccess: () => {
-      toast.success("Report marked as reviewed.");
+    onSuccess: (_data, variables) => {
+      toast.success(`Report moved to “${reportStatusLabel(variables.status)}”.`);
+      setNotes((prev) => ({ ...prev, [variables.id]: "" }));
       void queryClient.invalidateQueries({ queryKey: ["admin-reports"] });
+      void queryClient.invalidateQueries({ queryKey: ["admin-report-events"] });
     },
+    onError: () => toast.error("Could not update this report."),
   });
 
   const claimAdmin = useMutation({
@@ -156,6 +200,9 @@ function AdminPage() {
       : true,
   );
   const reports = reportsQuery.data ?? [];
+  const events = eventsQuery.data ?? [];
+  const visibleReports =
+    statusFilter === "all" ? reports : reports.filter((r) => r.status === statusFilter);
 
   const exportCsv = () => {
     const csv = toCsv(
@@ -188,7 +235,9 @@ function AdminPage() {
         <div>
           <h1 className="text-3xl font-semibold">Registry administration</h1>
           <p className="mt-2 text-muted-foreground">
-            {donors.length} records · {reports.filter((r) => !r.resolved).length} open reports
+            {donors.length} records ·{" "}
+            {reports.filter((r) => r.status === "open" || r.status === "in_review").length} reports
+            awaiting review
           </p>
         </div>
         <Button variant="outline" onClick={exportCsv} disabled={filtered.length === 0}>
@@ -286,38 +335,131 @@ function AdminPage() {
         </TabsContent>
 
         <TabsContent value="reports" className="mt-6 space-y-4">
+          <div className="flex flex-wrap gap-2">
+            {(["all", ...REPORT_STATUSES.map((s) => s.value)] as const).map((value) => (
+              <Button
+                key={value}
+                size="sm"
+                variant={statusFilter === value ? "default" : "outline"}
+                onClick={() => setStatusFilter(value)}
+              >
+                {value === "all" ? "All" : reportStatusLabel(value)}
+                <span className="ml-2 text-xs opacity-70">
+                  {value === "all"
+                    ? reports.length
+                    : reports.filter((r) => r.status === value).length}
+                </span>
+              </Button>
+            ))}
+          </div>
+
           {reportsQuery.isLoading && <Skeleton className="h-40 w-full" />}
-          {!reportsQuery.isLoading && reports.length === 0 && (
+          {!reportsQuery.isLoading && visibleReports.length === 0 && (
             <p className="rounded-lg border border-dashed border-border p-8 text-center text-sm text-muted-foreground">
-              No reports yet. Records flagged by the public will appear here.
+              No reports in this queue. Records flagged by the public will appear here.
             </p>
           )}
-          {reports.map((report) => (
-            <Card key={report.id}>
-              <CardHeader>
-                <CardTitle className="text-base">{report.reason}</CardTitle>
-                <CardDescription>
-                  {new Date(report.created_at).toLocaleString()} ·{" "}
-                  {report.resolved ? "Reviewed" : "Open"}
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-3 text-sm">
-                {report.details && <p className="text-muted-foreground">{report.details}</p>}
-                <div className="flex flex-wrap gap-2">
-                  <Button asChild size="sm" variant="outline">
-                    <Link to="/donors/$id" params={{ id: report.donor_id }}>
-                      Open record
-                    </Link>
-                  </Button>
-                  {!report.resolved && (
-                    <Button size="sm" onClick={() => resolveReport.mutate(report.id)}>
-                      Mark reviewed
-                    </Button>
+          {visibleReports.map((report) => {
+            const history = events.filter((e) => e.report_id === report.id);
+            return (
+              <Card key={report.id}>
+                <CardHeader>
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <CardTitle className="text-base">{report.reason}</CardTitle>
+                    <Badge variant={report.status === "open" ? "default" : "outline"}>
+                      {reportStatusLabel(report.status)}
+                    </Badge>
+                  </div>
+                  <CardDescription>
+                    Reported {new Date(report.created_at).toLocaleString()}
+                    {report.reviewed_at
+                      ? ` · last reviewed ${new Date(report.reviewed_at).toLocaleString()}`
+                      : ""}
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4 text-sm">
+                  {report.details && <p className="text-muted-foreground">{report.details}</p>}
+                  {report.admin_notes && (
+                    <p className="rounded-md bg-muted p-3 text-muted-foreground">
+                      Latest note: {report.admin_notes}
+                    </p>
                   )}
-                </div>
-              </CardContent>
-            </Card>
-          ))}
+
+                  <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_200px] sm:items-end">
+                    <div className="space-y-2">
+                      <Label htmlFor={`note-${report.id}`}>Review note (optional)</Label>
+                      <Textarea
+                        id={`note-${report.id}`}
+                        rows={2}
+                        value={notes[report.id] ?? ""}
+                        onChange={(e) =>
+                          setNotes((prev) => ({ ...prev, [report.id]: e.target.value }))
+                        }
+                        placeholder="What did you check or change?"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor={`status-${report.id}`}>Set status</Label>
+                      <Select
+                        value={report.status}
+                        onValueChange={(status) =>
+                          review.mutate({
+                            id: report.id,
+                            status: status as ReportStatus,
+                            note: notes[report.id] ?? "",
+                          })
+                        }
+                      >
+                        <SelectTrigger id={`status-${report.id}`}>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {REPORT_STATUSES.map((s) => (
+                            <SelectItem key={s.value} value={s.value}>
+                              {s.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+
+                  <div className="flex flex-wrap gap-2">
+                    <Button asChild size="sm" variant="outline">
+                      <Link to="/donors/$id" params={{ id: report.donor_id }}>
+                        Open record
+                      </Link>
+                    </Button>
+                  </div>
+
+                  <div>
+                    <h3 className="mb-2 text-xs font-semibold tracking-wide text-muted-foreground uppercase">
+                      Status history
+                    </h3>
+                    <ol className="space-y-2 border-l border-border pl-4">
+                      {history.length === 0 && (
+                        <li className="text-muted-foreground">No changes recorded yet.</li>
+                      )}
+                      {history.map((event) => (
+                        <li key={event.id} className="text-sm">
+                          <span className="font-medium">
+                            {event.from_status
+                              ? `${reportStatusLabel(event.from_status)} → ${reportStatusLabel(event.to_status)}`
+                              : reportStatusLabel(event.to_status)}
+                          </span>
+                          <span className="text-muted-foreground">
+                            {" "}
+                            · {new Date(event.created_at).toLocaleString()}
+                          </span>
+                          {event.note && <p className="text-muted-foreground">{event.note}</p>}
+                        </li>
+                      ))}
+                    </ol>
+                  </div>
+                </CardContent>
+              </Card>
+            );
+          })}
         </TabsContent>
       </Tabs>
     </div>
