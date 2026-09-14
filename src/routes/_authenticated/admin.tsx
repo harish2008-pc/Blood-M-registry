@@ -59,6 +59,8 @@ function AdminPage() {
   const { isAdmin, loading } = useAuth();
   const queryClient = useQueryClient();
   const [filter, setFilter] = useState("");
+  const [statusFilter, setStatusFilter] = useState<ReportStatus | "all">("all");
+  const [notes, setNotes] = useState<Record<string, string>>({});
 
   const donorsQuery = useQuery({
     queryKey: ["admin-donors"],
