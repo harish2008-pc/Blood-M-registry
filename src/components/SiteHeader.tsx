@@ -48,12 +48,12 @@ export function SiteHeader() {
   return (
     <header className="sticky top-0 z-40 border-b border-border bg-background/90 backdrop-blur">
       <div className="mx-auto flex h-16 max-w-6xl items-center gap-3 px-4">
-        <Link to="/" className="flex items-center gap-2" aria-label="Blood Management Registry home">
+        <Link to="/" className="flex items-center gap-2" aria-label="BloodBridge home">
           <span className="flex size-9 items-center justify-center rounded-lg bg-primary text-primary-foreground">
             <Droplet className="size-5" aria-hidden="true" />
           </span>
           <span className="text-sm leading-tight font-semibold sm:text-base">
-            Blood Management
+            BloodBridge
             <span className="block text-xs font-normal text-muted-foreground">Donor registry</span>
           </span>
         </Link>
