@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { supabase } from "@/integrations/supabase/client";
+import { useT } from "@/lib/i18n";
 import {
   AVAILABILITY,
   BLOOD_GROUPS,
@@ -48,7 +49,26 @@ export const Route = createFileRoute("/")({
 
 const ANY = "any";
 
+const features = [
+  {
+    icon: ShieldCheck,
+    title: "Privacy by default",
+    body: "Search results never include phone numbers, emails or street addresses.",
+  },
+  {
+    icon: Users,
+    title: "Consent you control",
+    body: "Donors opt in, edit their own record, and can withdraw at any moment.",
+  },
+  {
+    icon: Droplet,
+    title: "Built for urgency",
+    body: "Available and verified volunteers are shown first, closest area next.",
+  },
+];
+
 function Index() {
+  const t = useT();
   const [bloodGroup, setBloodGroup] = useState<string>(ANY);
   const [availability, setAvailability] = useState<string>(ANY);
   const [locality, setLocality] = useState("");
@@ -114,35 +134,36 @@ function Index() {
       <section className="emergency-panel">
         <div className="mx-auto max-w-6xl px-4 py-12 sm:py-16">
           <Badge variant="secondary" className="mb-4">
-            Consent-based volunteer registry
+            {t("Consent-based volunteer registry")}
           </Badge>
           <h1 className="max-w-2xl text-3xl font-semibold sm:text-4xl">
-            Find a blood donor, fast — without exposing anyone&apos;s privacy
+            {t("Find a blood donor, fast — without exposing anyone's privacy")}
           </h1>
           <p className="mt-3 max-w-2xl text-sm opacity-90 sm:text-base">
-            Search volunteers by blood group and area. Names are shortened and phone numbers stay
-            hidden until a signed-in user deliberately asks for them.
+            {t(
+              "Search volunteers by blood group and area. Names are shortened and phone numbers stay hidden until a signed-in user deliberately asks for them.",
+            )}
           </p>
 
           <Card className="mt-8 panel-shadow">
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-lg">
-                <Search className="size-5" aria-hidden="true" /> Find a donor
+                <Search className="size-5" aria-hidden="true" /> {t("Find a donor")}
               </CardTitle>
               <CardDescription>
-                Fill in what you know. Every field is optional except your own urgency.
+                {t("Fill in what you know. Every field is optional except your own urgency.")}
               </CardDescription>
             </CardHeader>
             <CardContent>
               <form onSubmit={runSearch} className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                 <div className="space-y-2">
-                  <Label htmlFor="search-group">Blood group</Label>
+                  <Label htmlFor="search-group">{t("Blood group")}</Label>
                   <Select value={bloodGroup} onValueChange={setBloodGroup}>
                     <SelectTrigger id="search-group">
-                      <SelectValue placeholder="Any blood group" />
+                      <SelectValue placeholder={t("Any blood group")} />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value={ANY}>Any blood group</SelectItem>
+                      <SelectItem value={ANY}>{t("Any blood group")}</SelectItem>
                       {BLOOD_GROUPS.map((group) => (
                         <SelectItem key={group} value={group}>
                           {group}
@@ -153,36 +174,36 @@ function Index() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="search-locality">Area / locality</Label>
+                  <Label htmlFor="search-locality">{t("Area / locality")}</Label>
                   <Input
                     id="search-locality"
                     value={locality}
                     onChange={(e) => setLocality(e.target.value)}
-                    placeholder="e.g. Adyar"
+                    placeholder={t("e.g. Adyar")}
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="search-city">City</Label>
+                  <Label htmlFor="search-city">{t("City")}</Label>
                   <Input
                     id="search-city"
                     value={city}
                     onChange={(e) => setCity(e.target.value)}
-                    placeholder="e.g. Chennai"
+                    placeholder={t("e.g. Chennai")}
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="search-availability">Availability</Label>
+                  <Label htmlFor="search-availability">{t("Availability")}</Label>
                   <Select value={availability} onValueChange={setAvailability}>
                     <SelectTrigger id="search-availability">
-                      <SelectValue placeholder="Any status" />
+                      <SelectValue placeholder={t("Any status")} />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value={ANY}>Any status</SelectItem>
+                      <SelectItem value={ANY}>{t("Any status")}</SelectItem>
                       {AVAILABILITY.map((option) => (
                         <SelectItem key={option.value} value={option.value}>
-                          {option.label}
+                          {t(option.label)}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -190,18 +211,18 @@ function Index() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="search-near">Your area (optional)</Label>
+                  <Label htmlFor="search-near">{t("Your area (optional)")}</Label>
                   <Input
                     id="search-near"
                     value={nearArea}
                     onChange={(e) => setNearArea(e.target.value)}
-                    placeholder="Used to sort closest first"
+                    placeholder={t("Used to sort closest first")}
                   />
                 </div>
 
                 <div className="flex items-end">
                   <Button type="submit" className="w-full" size="lg">
-                    Search the registry
+                    {t("Search the registry")}
                   </Button>
                 </div>
               </form>
@@ -212,18 +233,19 @@ function Index() {
 
       <section className="mx-auto max-w-6xl px-4 py-10">
         <Alert variant="destructive">
-          <AlertTitle>Confirm compatibility with a professional</AlertTitle>
-          <AlertDescription>{MEDICAL_NOTICE}</AlertDescription>
+          <AlertTitle>{t("Confirm compatibility with a professional")}</AlertTitle>
+          <AlertDescription>{t(MEDICAL_NOTICE)}</AlertDescription>
         </Alert>
 
         <div aria-live="polite" className="mt-8">
           {!submitted && (
             <div className="rounded-xl border border-dashed border-border p-10 text-center">
               <Droplet className="mx-auto size-8 text-primary" aria-hidden="true" />
-              <h2 className="mt-3 text-lg font-semibold">Start a search above</h2>
+              <h2 className="mt-3 text-lg font-semibold">{t("Start a search above")}</h2>
               <p className="mx-auto mt-1 max-w-md text-sm text-muted-foreground">
-                Choose a blood group, or simply type a city, to see which volunteers are currently
-                available.
+                {t(
+                  "Choose a blood group, or simply type a city, to see which volunteers are currently available.",
+                )}
               </p>
             </div>
           )}
@@ -238,19 +260,20 @@ function Index() {
 
           {submitted && results.isError && (
             <p role="alert" className="text-sm text-destructive">
-              The search could not be completed. Please try again.
+              {t("The search could not be completed. Please try again.")}
             </p>
           )}
 
           {submitted && !results.isLoading && sorted.length === 0 && (
             <div className="rounded-xl border border-dashed border-border p-10 text-center">
-              <h2 className="text-lg font-semibold">No matching donors yet</h2>
+              <h2 className="text-lg font-semibold">{t("No matching donors yet")}</h2>
               <p className="mx-auto mt-1 max-w-md text-sm text-muted-foreground">
-                Try widening the area, removing the availability filter, or searching a nearby city.
-                Contact your nearest blood bank in parallel.
+                {t(
+                  "Try widening the area, removing the availability filter, or searching a nearby city. Contact your nearest blood bank in parallel.",
+                )}
               </p>
               <Button asChild variant="outline" className="mt-4">
-                <Link to="/register">Register as a donor</Link>
+                <Link to="/register">{t("Register as a donor")}</Link>
               </Button>
             </div>
           )}
@@ -258,7 +281,7 @@ function Index() {
           {sorted.length > 0 && (
             <>
               <h2 className="mb-4 text-lg font-semibold">
-                {sorted.length} matching {sorted.length === 1 ? "donor" : "donors"}
+                {sorted.length} {sorted.length === 1 ? t("matching donor") : t("matching donors")}
               </h2>
               <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                 {sorted.map((donor) => (
@@ -270,14 +293,14 @@ function Index() {
                           <Badge
                             variant={donor.availability === "available" ? "secondary" : "outline"}
                           >
-                            {availabilityLabel(donor.availability)}
+                            {t(availabilityLabel(donor.availability))}
                           </Badge>
                           {donor.verified && (
                             <Badge variant="secondary">
-                              <BadgeCheck className="mr-1 size-3.5" /> Verified
+                              <BadgeCheck className="mr-1 size-3.5" /> {t("Verified")}
                             </Badge>
                           )}
-                          {donor.is_demo && <Badge variant="outline">Demo</Badge>}
+                          {donor.is_demo && <Badge variant="outline">{t("Demo")}</Badge>}
                         </div>
                         <CardTitle className="mt-2 text-lg">{donor.display_name}</CardTitle>
                         <CardDescription className="flex items-center gap-1">
@@ -288,7 +311,7 @@ function Index() {
                       <CardContent>
                         <Button asChild variant="outline" className="w-full">
                           <Link to="/donors/$id" params={{ id: donor.id }}>
-                            View record
+                            {t("View record")}
                           </Link>
                         </Button>
                       </CardContent>
@@ -302,28 +325,12 @@ function Index() {
       </section>
 
       <section className="mx-auto grid max-w-6xl gap-4 px-4 pb-6 sm:grid-cols-3">
-        {[
-          {
-            icon: ShieldCheck,
-            title: "Privacy by default",
-            body: "Search results never include phone numbers, emails or street addresses.",
-          },
-          {
-            icon: Users,
-            title: "Consent you control",
-            body: "Donors opt in, edit their own record, and can withdraw at any moment.",
-          },
-          {
-            icon: Droplet,
-            title: "Built for urgency",
-            body: "Available and verified volunteers are shown first, closest area next.",
-          },
-        ].map(({ icon: Icon, title, body }) => (
+        {features.map(({ icon: Icon, title, body }) => (
           <Card key={title}>
             <CardHeader>
               <Icon className="size-5 text-primary" aria-hidden="true" />
-              <CardTitle className="text-base">{title}</CardTitle>
-              <CardDescription>{body}</CardDescription>
+              <CardTitle className="text-base">{t(title)}</CardTitle>
+              <CardDescription>{t(body)}</CardDescription>
             </CardHeader>
           </Card>
         ))}
@@ -331,8 +338,8 @@ function Index() {
 
       <section className="mx-auto max-w-6xl px-4 pb-12">
         <Alert>
-          <AlertTitle>Emergency guidance</AlertTitle>
-          <AlertDescription>{EMERGENCY_NOTICE}</AlertDescription>
+          <AlertTitle>{t("Emergency guidance")}</AlertTitle>
+          <AlertDescription>{t(EMERGENCY_NOTICE)}</AlertDescription>
         </Alert>
       </section>
     </div>
