@@ -103,15 +103,30 @@ function AdminPage() {
     onError: () => toast.error("Update failed."),
   });
 
-  const resolveReport = useMutation({
-    mutationFn: async (id: string) => {
-      const { error } = await supabase.from("donor_reports").update({ resolved: true }).eq("id", id);
+  const review = useMutation({
+    mutationFn: async ({
+      id,
+      status,
+      note,
+    }: {
+      id: string;
+      status: ReportStatus;
+      note: string;
+    }) => {
+      const { error } = await supabase.rpc("review_report", {
+        p_report_id: id,
+        p_status: status,
+        p_note: note,
+      });
       if (error) throw error;
     },
-    onSuccess: () => {
-      toast.success("Report marked as reviewed.");
+    onSuccess: (_data, variables) => {
+      toast.success(`Report moved to “${reportStatusLabel(variables.status)}”.`);
+      setNotes((prev) => ({ ...prev, [variables.id]: "" }));
       void queryClient.invalidateQueries({ queryKey: ["admin-reports"] });
+      void queryClient.invalidateQueries({ queryKey: ["admin-report-events"] });
     },
+    onError: () => toast.error("Could not update this report."),
   });
 
   const claimAdmin = useMutation({
