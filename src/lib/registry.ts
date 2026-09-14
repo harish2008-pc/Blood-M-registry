@@ -25,6 +25,18 @@ export type DonorSearchResult = {
   last_donation_date: string | null;
 };
 
+export const REPORT_STATUSES = [
+  { value: "open", label: "Open" },
+  { value: "in_review", label: "In review" },
+  { value: "action_taken", label: "Action taken" },
+  { value: "dismissed", label: "Dismissed" },
+] as const;
+
+export type ReportStatus = (typeof REPORT_STATUSES)[number]["value"];
+
+export const reportStatusLabel = (value: string) =>
+  REPORT_STATUSES.find((s) => s.value === value)?.label ?? value;
+
 export const donorSchema = z.object({
   full_name: z.string().trim().min(2, "Please enter the full name").max(100),
   locality: z.string().trim().min(2, "Please enter an area or locality").max(120),
