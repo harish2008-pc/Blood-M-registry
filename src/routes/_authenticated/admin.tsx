@@ -235,7 +235,9 @@ function AdminPage() {
         <div>
           <h1 className="text-3xl font-semibold">Registry administration</h1>
           <p className="mt-2 text-muted-foreground">
-            {donors.length} records · {reports.filter((r) => !r.resolved).length} open reports
+            {donors.length} records ·{" "}
+            {reports.filter((r) => r.status === "open" || r.status === "in_review").length} reports
+            awaiting review
           </p>
         </div>
         <Button variant="outline" onClick={exportCsv} disabled={filtered.length === 0}>
